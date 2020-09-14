@@ -19,8 +19,8 @@ Controls
 - Draw = Left Mouse
 - Erase = Ctrl + Left Mouse or Left + Right Mouse
 - Test Cell / Eyedropper = Right Mouse
-- Move View = Click & Drag Middle Mouse
-- Zoom View = Wheel
+- Move View = Click & Drag Middle Mouse or Wheel
+- Zoom View = Ctrl + Wheel
 - Select Area = Shift + Left Mouse
 
 Cell Types

@@ -1105,7 +1105,7 @@ function UpdateInput()
     usingEyedropper = 0;
     dragging = 0;
 
-    if (mouseDown == 2 || keyDown_tab) // pan = middle mouse
+    if (mouseDown == 2 || keyDown_tab || mouseWheelX || mouseWheelY) // pan = middle mouse drag or wheel/horizontal wheel
     {
         dragging = 1;
         if (mouseDown)
@@ -1119,13 +1119,18 @@ function UpdateInput()
             renderOffsetX = mouseX/renderScale - dragStartX;
             renderOffsetY = mouseY/renderScale - dragStartY;
         }
+        else if (mouseWheelX || mouseWheelY) 
+        {
+            renderOffsetX -= .1 * mouseWheelX / renderScale;
+            renderOffsetY -= .1 * mouseWheelY / renderScale;
+        }
     }
-    if (mouseWheel | keysPressed[40] | keysPressed[38]) // zoom = mouse wheel or up/down
+    if (mouseWheelY && keyDown_control || keysPressed[40] || keysPressed[38]) // zoom = ctrl + mouse wheel or up/down
     {   
         // zoom towards edit object
         renderOffsetX = renderScale * (renderOffsetX / cellSize + editObject.x + .5);
         renderOffsetY = renderScale * (renderOffsetY / cellSize + editObject.y + .5);
-        let renderScaleScale = keysPressed[40] ? .75 : keysPressed[38] ? 1/.75 : mouseWheel > 0 ? .9 : 1/.9;
+        let renderScaleScale = keysPressed[40] ? .75 : keysPressed[38] ? 1/.75 : mouseWheelY > 0 ? .9 : 1/.9;
         renderScale = Clamp(renderScale*renderScaleScale, 4, .1);
         renderOffsetX = cellSize * (renderOffsetX / renderScale - editObject.x - .5);
         renderOffsetY = cellSize * (renderOffsetY / renderScale - editObject.y - .5);
@@ -1133,7 +1138,7 @@ function UpdateInput()
 
     const editObjectPos = GetCellPosFromScreenPos(mouseX, mouseY);
     editObject.SetXY(editObjectPos[0], editObjectPos[1]);
-    canvas.style.cursor = dragging ? 'grab' : '';
+    canvas.style.cursor = dragging && !mouseWheelX && !mouseWheelY ? 'grab' : '';
 
     // play mode shortcuts
     for(let mode = 0; mode < PLAY_MODE_COUNT; mode++)
@@ -1439,7 +1444,7 @@ function Update(animationTime = 0)
         // todo: prevent stuck input
         keysPressed = [];
         keysDown = [];
-        mouseDown = mouseButtons = mousePressed = mouseWheel = 0;
+        mouseDown = mouseButtons = mousePressed = mouseWheelX = mouseWheelY = 0;
     }
     hasFocus = document.hasFocus();
 
@@ -1552,7 +1557,7 @@ function Update(animationTime = 0)
     // clean up frame
 
     keysPressed = [];
-    mousePressed = mouseWheel = 0;
+    mousePressed = mouseWheelX = mouseWheelY = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2493,7 +2498,7 @@ let lastTime = 0;
 let frame = -1;
 let pauseStep = 0;
 let editObject = new Cell(0,0);
-let mouseDown, mousePressed, mouseButtons, mouseX=0, mouseY=0, mouseWheel;
+let mouseDown, mousePressed, mouseButtons, mouseX=0, mouseY=0, mouseWheelX, mouseWheelY;
 let dragStartX, dragStartY;
 let playMode = -1;
 let deltaTime = 0;
@@ -2543,8 +2548,10 @@ document.addEventListener('wheel', e=>
 {
     e.ctrlKey && e.preventDefault();
 
-    if (e.target == canvas)
-        mouseWheel = e.deltaY;
+    if (e.target == canvas) {
+        mouseWheelX = e.deltaX;
+        mouseWheelY = e.deltaY;
+    }
 
 }, { passive: false });
 
